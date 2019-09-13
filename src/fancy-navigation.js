@@ -1,11 +1,13 @@
 import React from 'react'
 import { useEffect, useReducer, useRef } from 'react'
 
+// Util functions
 const hasProp = Object.prototype.hasOwnProperty
 
-const findInitial = (routes) => {
+const setInitial = (store, routes) => {
   for (const route in routes) {
     if (routes[route].initial) {
+      store.dispatch(navigate(route))
       return route
     }
   }
@@ -35,10 +37,63 @@ const findComponent = (routes, currentRoute) => {
   }
 }
 
+// State actions and reducer
+
+const NAVIGATE = 'FANCY_NAVIGATE'
+
+function navigate (routeName) {
+  return { type: NAVIGATE, payload: { routeName } }
+}
+
+const GO_BACK = 'FANCY_GO_BACK'
+
+function goBack () {
+  return { type: GO_BACK, payload: {} }
+}
+
+export const actions = {
+  navigate,
+  goBack
+}
+
+export function fancyNavigationReducer (action, state) {
+  const { type, payload } = action
+  const prevRoutes = state.routeHistory || []
+
+  if (type === NAVIGATE) {
+    const { routeName } = payload
+    if (routeName !== state.currentRoute) {
+      return {
+        ...state,
+        currentRoute: routeName,
+        routeHistory: prevRoutes.concat([state.currentRoute])
+      }
+    }
+  }
+
+  if (type === GO_BACK) {
+    const backToRoute = [...prevRoutes].pop()
+    console.log('GO_BACK', { backToRoute, prevRoutes })
+    if (!backToRoute) {
+      console.log('CLOSE APP')
+    } else {
+      return {
+        ...state,
+        currentRoute: backToRoute,
+        routeHistory: prevRoutes
+      }
+    }
+  }
+  
+  return state
+}
+
+
+// Create Native Router
 export function createNativeRouter (store, routes) {
   const NativeRouter = () => {
     const currentRoute = useCurrentRoute(store)
-    const route = currentRoute || findInitial(routes)
+    const route = currentRoute || setInitial(store, routes)
     const Component = findComponent(routes, route)
 
     if (!Component) {
@@ -52,6 +107,7 @@ export function createNativeRouter (store, routes) {
   return NativeRouter
 }
 
+// Hook to sync currentRoute from store
 function useCurrentRoute (store) {
   const [, forceRender] = useReducer(n => n + 1, 0)
 
