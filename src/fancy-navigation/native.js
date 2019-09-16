@@ -45,10 +45,11 @@ const ScreenWrapper = ({ route, backToRoute, cleanup, children }) => {
 
 // Create Native Router
 export function createNativeRouter (store, routes) {
-  const updateRouteStack = nextRouteStack => (
-    store.dispatch(actions.updateStack(nextRouteStack))
-  )
+  // When a ScreenWrapper is done animating, it calls this function
+  // to move the next route and stack values along.
+  const updateRouteStack = () => store.dispatch(actions.updateStack())
 
+  // This is our Native Router Component!
   const NativeRouter = () => {
     const {
       currentRoute,
@@ -63,12 +64,8 @@ export function createNativeRouter (store, routes) {
       console.warn(`No Component found for route: ${route}`)
     }
 
-    const backComponents = (routeStack || []).map(route => [route, findComponent(routes, route)])
-    const components = backComponents.concat([[route, Component]])
-
-    console.log({
-      backToRoute
-    })
+    const stackedComponents = (routeStack || []).map(route => [route, findComponent(routes, route)])
+    const components = stackedComponents.concat([[route, Component]])
 
     return (
       <React.Fragment>
@@ -78,6 +75,7 @@ export function createNativeRouter (store, routes) {
             route={route}
             backToRoute={backToRoute}
             cleanup={updateRouteStack}
+            focused={route === currentRoute}
           >
             <Component />
           </ScreenWrapper>
