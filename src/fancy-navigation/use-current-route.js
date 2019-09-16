@@ -4,16 +4,26 @@ import { useEffect, useReducer, useRef } from 'react'
 export function useCurrentRoute (store) {
   const [, forceRender] = useReducer(n => n + 1, 0)
 
-  const routeRef = useRef()
-  const historyRef = useRef()
+  const stateRef = useRef({})
 
   useEffect(() => {
     function handleStateChange () {
-      const nextRoute = store.getState().currentRoute
-      const history = store.getState().routeHistory
-      if (nextRoute !== routeRef.current) {
-        routeRef.current = nextRoute
-        historyRef.current = history
+      const prev = stateRef.current
+      const {
+        currentRoute,
+        routeStack,
+        backToRoute,
+        nextRouteStack
+      } = store.getState()
+
+      if (currentRoute !== prev.currentRoute || backToRoute !== prev.backToRoute) {
+        stateRef.current = {
+          currentRoute,
+          routeStack,
+          backToRoute,
+          nextRouteStack
+        }
+
         forceRender({})
       }
     }
@@ -24,5 +34,10 @@ export function useCurrentRoute (store) {
     return () => unsubscribe()
   }, [store])
 
-  return [routeRef.current, historyRef.current]
+  // {
+  //   currentRoute,
+  //   routeStack,
+  //   nextRouteStack
+  // }
+  return stateRef.current
 }

@@ -4,7 +4,7 @@ import { dispatch, goBack } from '/store'
 
 export function DetailScreen () {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'orange' }}>
       <Text>Detail Screen</Text>
       <TouchableOpacity onPress={() => dispatch(goBack())}>
         <Text>Go Back!</Text>

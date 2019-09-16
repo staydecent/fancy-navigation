@@ -2,15 +2,18 @@
 
 const NAVIGATE = 'FANCY_NAVIGATE'
 const GO_BACK = 'FANCY_GO_BACK'
+const UPDATE_STACK = 'FANCY_UPDATE_STACK'
 export const CLOSE_APP = 'FANCY_CLOSE_APP'
 
 const navigate = (routeName) => ({ type: NAVIGATE, payload: { routeName } })
 const goBack = () => ({ type: GO_BACK, payload: {} })
+const updateStack = () => ({ type: UPDATE_STACK, payload: {} })
 const closeApp = () => ({ type: CLOSE_APP, payload: {} })
 
 export const actions = {
   navigate,
   goBack,
+  updateStack,
   closeApp
 }
 
@@ -30,7 +33,7 @@ const pop = (array) => {
 
 export function fancyNavigationReducer (action, state) {
   const { type, payload } = action
-  const history = state.routeHistory || []
+  const history = state.routeStack || []
 
   if (type === NAVIGATE) {
     const { routeName } = payload
@@ -38,13 +41,13 @@ export function fancyNavigationReducer (action, state) {
       return {
         ...state,
         currentRoute: routeName,
-        routeHistory: push(history, state.currentRoute)
+        routeStack: push(history, state.currentRoute)
       }
     }
   }
 
   if (type === GO_BACK) {
-    const [backToRoute, newHistory] = pop(history)
+    const [backToRoute, nextRouteStack] = pop(history)
     if (!backToRoute) {
       // This is handled by a RN specific reducer to keep
       // this reducer decoupled from RN.
@@ -52,11 +55,26 @@ export function fancyNavigationReducer (action, state) {
         dispatch(closeApp())
       }
     } else {
+      // We don't replace/update the `routeStack` array,
+      // But we set what it should be set to next, and our
+      // `ScreenWrapper` components will handle when to update
+      // the `routeStack` so they have time to animate.
       return {
         ...state,
-        currentRoute: backToRoute,
-        routeHistory: newHistory
+        nextRouteStack,
+        backToRoute
       }
+    }
+  }
+
+  if (type === UPDATE_STACK) {
+    const { nextRouteStack, backToRoute } = state
+    return {
+      ...state,
+      backToRoute: null,
+      nextRouteStack: null,
+      routeStack: nextRouteStack,
+      currentRoute: backToRoute
     }
   }
   

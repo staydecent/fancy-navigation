@@ -1,9 +1,9 @@
-import React from 'react'
-import { BackHandler, View } from 'react-native'
+import React, { useRef, useEffect } from 'react'
+import { BackHandler, Animated } from 'react-native'
 
 import { useCurrentRoute } from './use-current-route'
 import { setInitial, findComponent } from './util'
-import { CLOSE_APP } from './state'
+import { CLOSE_APP, actions } from './state'
 
 const screenStyle = {
   position: 'absolute',
@@ -12,16 +12,50 @@ const screenStyle = {
   backgroundColor: 'white'
 }
 
-const ScreenWrapper = ({ children }) => {
+const ScreenWrapper = ({ route, backToRoute, cleanup, children }) => {
+  const opacity = useRef(new Animated.Value(0)).current
+  const top = useRef(new Animated.Value(100)).current
+
+  // Fade-in
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 150 }),
+      Animated.timing(top, { toValue: 0, duration: 150 })
+    ]).start()
+  }, [])
+
+  // Fade-out, then unmount
+  useEffect(() => {
+    if (backToRoute && backToRoute !== route) {
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 0, duration: 150 }),
+        Animated.timing(top, { toValue: 100, duration: 150 })
+      ]).start(cleanup)
+    }
+  }, [backToRoute])
+
+  const style = { ...screenStyle, opacity, top }
+
   return (
-    <View style={screenStyle}>{children}</View>
+    <Animated.View style={style}>
+      {children}
+    </Animated.View>
   )
 }
 
 // Create Native Router
 export function createNativeRouter (store, routes) {
+  const updateRouteStack = nextRouteStack => (
+    store.dispatch(actions.updateStack(nextRouteStack))
+  )
+
   const NativeRouter = () => {
-    const [currentRoute, history] = useCurrentRoute(store)
+    const {
+      currentRoute,
+      routeStack,
+      backToRoute,
+      nextRouteStack
+    } = useCurrentRoute(store)
     const route = currentRoute || setInitial(store, routes)
     const Component = findComponent(routes, route)
 
@@ -29,14 +63,22 @@ export function createNativeRouter (store, routes) {
       console.warn(`No Component found for route: ${route}`)
     }
 
-    const backComponents = (history || []).map(route => [route, findComponent(routes, route)])
+    const backComponents = (routeStack || []).map(route => [route, findComponent(routes, route)])
     const components = backComponents.concat([[route, Component]])
-    console.log({ components })
+
+    console.log({
+      backToRoute
+    })
 
     return (
       <React.Fragment>
         {components.map(([route, Component]) =>
-          <ScreenWrapper key={route}>
+          <ScreenWrapper
+            key={route}
+            route={route}
+            backToRoute={backToRoute}
+            cleanup={updateRouteStack}
+          >
             <Component />
           </ScreenWrapper>
         )}
