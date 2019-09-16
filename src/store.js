@@ -8,7 +8,11 @@ import createStore from 'atom'
 
 import pathReducer, { actions } from '@wasmuth/path-reducer'
 
-import { fancyNavigationReducer, actions as fancyActions } from '/fancy-navigation'
+import {
+  fancyNavigationReducer,
+  androidExitReducer,
+  actions as fancyActions
+} from '/fancy-navigation'
 
 // Define the global state on page load.
 export const initialState = {}
@@ -18,6 +22,7 @@ export const initialState = {}
 const reducers = [
   pathReducer,
   fancyNavigationReducer,
+  androidExitReducer,
   function logger (action, state) {
     console.log('[STORE]', { type: action.type, ...action.payload, state })
     return state
