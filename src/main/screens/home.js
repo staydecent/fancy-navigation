@@ -6,7 +6,7 @@ export function HomeScreen () {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'pink' }}>
       <Text>Home Screen</Text>
-      <TouchableOpacity onPress={() => dispatch(navigate('Detail'))}>
+      <TouchableOpacity onPress={() => dispatch(navigate('Users'))}>
         <Text>Goto Detail</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => dispatch(goBack())}>

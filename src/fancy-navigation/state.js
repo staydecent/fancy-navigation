@@ -5,7 +5,7 @@ const GO_BACK = 'FANCY_GO_BACK'
 const UPDATE_STACK = 'FANCY_UPDATE_STACK'
 export const CLOSE_APP = 'FANCY_CLOSE_APP'
 
-const navigate = (routeName) => ({ type: NAVIGATE, payload: { routeName } })
+const navigate = (routeName, routeParams) => ({ type: NAVIGATE, payload: { routeName, routeParams } })
 const goBack = () => ({ type: GO_BACK, payload: {} })
 const updateStack = () => ({ type: UPDATE_STACK, payload: {} })
 const closeApp = () => ({ type: CLOSE_APP, payload: {} })
@@ -36,10 +36,11 @@ export function fancyNavigationReducer (action, state) {
   const history = state.routeStack || []
 
   if (type === NAVIGATE) {
-    const { routeName } = payload
+    const { routeName, routeParams } = payload
     if (routeName !== state.currentRoute) {
       return {
         ...state,
+        routeParams,
         currentRoute: routeName,
         routeStack: push(history, state.currentRoute)
       }
@@ -73,6 +74,7 @@ export function fancyNavigationReducer (action, state) {
       ...state,
       backToRoute: null,
       nextRouteStack: null,
+      routeParams: null,
       routeStack: nextRouteStack,
       currentRoute: backToRoute
     }

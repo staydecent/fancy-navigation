@@ -3,9 +3,10 @@ import { actions } from './state'
 const hasProp = Object.prototype.hasOwnProperty
 
 export const setInitial = (store, routes) => {
+  const noRouteYet = store.getState().currentRoute == null
   for (const route in routes) {
     if (routes[route].initial) {
-      store.dispatch(actions.navigate(route))
+      noRouteYet && store.dispatch(actions.navigate(route))
       return route
     }
   }
@@ -20,16 +21,17 @@ export const findComponent = (routes, currentRoute) => {
         .some(routeName => routeName === currentRoute)
       if (shouldRender) {
         const Component = routes[route].component
-        return Component
+        return [Component, routes[route].routes]
       }
     } else {
       const foundRoute = route === currentRoute
       if (foundRoute) {
         const Component = routes[route].component
-        return Component
+        return [Component, null]
       }
     }
   }
+  return [null, null]
 }
 
 const arrayFromStack = stack => {

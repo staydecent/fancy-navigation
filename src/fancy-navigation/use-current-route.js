@@ -13,7 +13,8 @@ export function useCurrentRoute (store) {
         currentRoute,
         routeStack,
         backToRoute,
-        nextRouteStack
+        nextRouteStack,
+        routeParams
       } = store.getState()
 
       if (currentRoute !== prev.currentRoute || backToRoute !== prev.backToRoute) {
@@ -21,7 +22,8 @@ export function useCurrentRoute (store) {
           currentRoute,
           routeStack,
           backToRoute,
-          nextRouteStack
+          nextRouteStack,
+          routeParams
         }
 
         forceRender({})
@@ -37,7 +39,9 @@ export function useCurrentRoute (store) {
   // {
   //   currentRoute,
   //   routeStack,
-  //   nextRouteStack
+  //   backToRoute,
+  //   nextRouteStack,
+  //   routeParams
   // }
-  return stateRef.current
+  return stateRef.current || {}
 }
